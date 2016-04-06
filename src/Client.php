@@ -35,7 +35,7 @@ MULTIPART_FORM_DATA
             ]
         ]);
 
-        $result = file_get_contents('http://' . $this->serviceLocation, false, $context);
+        $result = @file_get_contents('http://' . $this->serviceLocation, false, $context);
 
         if ($result === false) {
             throw new Exception('File upload fails.');
@@ -52,7 +52,11 @@ MULTIPART_FORM_DATA
             ]
         ]);
 
-        $result = file_get_contents('http://' . $this->serviceLocation . '/' . $id, false, $context);
+        $result = @file_get_contents('http://' . $this->serviceLocation . '/' . $id, false, $context);
+
+        if (!$result) {
+            throw new Exception('Can not delete content ' . $id);
+        }
 
         return json_decode($result, true);
     }
