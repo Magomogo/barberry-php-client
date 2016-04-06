@@ -1,0 +1,17 @@
+{
+    "name": "barberry/php-client",
+    "description": "PHP client for Barberry service",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Magomogo",
+            "email": "mgnatenko@gmail.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+          "Barberry\\": "src/"
+        }
+    }
+}
