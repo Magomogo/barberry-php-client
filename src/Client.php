@@ -32,13 +32,18 @@ $content\r
 --$multipartBoundary--\r
 
 MULTIPART_FORM_DATA
+                ,
+                'ignore_errors' => '1'
             ]
         ]);
 
-        $result = @file_get_contents('http://' . $this->serviceLocation, false, $context);
+        $stream = fopen('http://' . $this->serviceLocation, 'r', false, $context);
+        $meta = stream_get_meta_data($stream);
+        $result = stream_get_contents($stream);
+        fclose($stream);
 
-        if ($result === false) {
-            throw new Exception('File upload fails.');
+        if ($meta['wrapper_data'][0] !== 'HTTP/1.1 201 Created') {
+            throw new Exception('File upload failure. ' . $meta['wrapper_data'][0] . ' ' . $result);
         }
 
         return json_decode($result, true);
