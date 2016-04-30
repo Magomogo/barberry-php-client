@@ -43,7 +43,7 @@ MULTIPART_FORM_DATA
         fclose($stream);
 
         if ($meta['wrapper_data'][0] !== 'HTTP/1.1 201 Created') {
-            throw new Exception('File upload failure. ' . $meta['wrapper_data'][0] . ' ' . $result);
+            throw new Exception($filename . ': File upload failure. ' . $meta['wrapper_data'][0] . ' ' . $result);
         }
 
         return json_decode($result, true);
