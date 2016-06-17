@@ -13,7 +13,13 @@ class Client
 
     public function get($idWithCommand)
     {
-        return file_get_contents('http://' . $this->serviceLocation . '/' . $idWithCommand);
+        $content = @file_get_contents('http://' . $this->serviceLocation . '/' . $idWithCommand);
+
+        if ($content === false) {
+            throw new Exception('Content not found', 404);
+        }
+
+        return $content;
     }
 
     public function post($content, $filename)
