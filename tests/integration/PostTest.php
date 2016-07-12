@@ -31,9 +31,11 @@ class PostTest extends PHPUnit_Framework_TestCase
     {
         $this->assertRegExp('/.+/', self::$contentId, 'Content was uploaded');
 
+        $gizzle = new \GuzzleHttp\Client();
+
         $this->assertSame(
             file_get_contents(__DIR__ . '/data/image.jpg'),
-            $this->client->get(self::$contentId)
+            $gizzle->get('http://' . getenv('BARBERRY') . '/' . self::$contentId)->getBody() . ''
         );
     }
 }
