@@ -38,7 +38,7 @@ class DeleteTest extends PHPUnit_Framework_TestCase
 
         $this->client->delete('not-existing-id');
     }
-    
+
     private static function uploadImage($filePath)
     {
         $guzzle = new \GuzzleHttp\Client();

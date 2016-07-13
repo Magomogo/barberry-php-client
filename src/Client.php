@@ -5,18 +5,29 @@ namespace Barberry;
 class Client
 {
     private $serviceLocation;
+    private $resource;
 
     public function __construct($serviceLocation)
     {
         $this->serviceLocation = $serviceLocation;
+        $this->resource = curl_init();
+        curl_setopt($this->resource, CURLOPT_RETURNTRANSFER, 1);
+    }
+
+    public function __destruct()
+    {
+        curl_close($this->resource);
     }
 
     public function get($idWithCommand)
     {
-        $content = @file_get_contents('http://' . $this->serviceLocation . '/' . $idWithCommand);
+        curl_setopt($this->resource, CURLOPT_URL, 'http://' . $this->serviceLocation . '/' . $idWithCommand);
+        $content = curl_exec($this->resource);
 
-        if ($content === false) {
-            throw new Exception('Content not found', 404);
+        $responseHttpCode = curl_getinfo($this->resource, CURLINFO_HTTP_CODE);
+
+        if ($responseHttpCode !== 200) {
+            throw new Exception('HTTP error', $responseHttpCode);
         }
 
         return $content;
@@ -25,31 +36,33 @@ class Client
     public function post($content, $filename)
     {
         $multipartBoundary = '--------------------------' . microtime(true);
-
-        $context = stream_context_create([
-            'http' => [
-                'method' => 'POST',
-                'header' => 'Content-Type: multipart/form-data; boundary=' . $multipartBoundary,
-                'content' => <<<MULTIPART_FORM_DATA
+        $postBody = <<<MULTIPART_FORM_DATA
 --$multipartBoundary\r
 Content-Disposition: "form-data"; name="file"; filename="$filename"\r
 \r
 $content\r
 --$multipartBoundary--\r
 
-MULTIPART_FORM_DATA
-                ,
-                'ignore_errors' => '1'
-            ]
-        ]);
+MULTIPART_FORM_DATA;
 
-        $stream = fopen('http://' . $this->serviceLocation, 'r', false, $context);
-        $meta = stream_get_meta_data($stream);
-        $result = stream_get_contents($stream);
-        fclose($stream);
+        curl_setopt_array(
+            $this->resource,
+            array(
+                CURLOPT_URL => 'http://' . $this->serviceLocation,
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => $postBody,
+                CURLOPT_HTTPHEADER => array(
+                    'Content-Type: multipart/form-data; boundary=' . $multipartBoundary,
+                    'Content-Length: ' . strlen($postBody)
+                )
+            )
+        );
 
-        if ($meta['wrapper_data'][0] !== 'HTTP/1.1 201 Created') {
-            throw new Exception($filename . ': File upload failure. ' . $meta['wrapper_data'][0] . ' ' . $result);
+        $result = curl_exec($this->resource);
+        $responseHttpCode = curl_getinfo($this->resource, CURLINFO_HTTP_CODE);
+
+        if ($responseHttpCode !== 201) {
+            throw new Exception($filename . ': File upload failure. HTTP #' . $responseHttpCode . ' ' . $result);
         }
 
         return json_decode($result, true);
@@ -57,15 +70,17 @@ MULTIPART_FORM_DATA
 
     public function delete($id)
     {
-        $context = stream_context_create([
-            'http' => [
-                'method' => 'DELETE',
-            ]
-        ]);
+        curl_setopt_array(
+            $this->resource,
+            array(
+                CURLOPT_URL => 'http://' . $this->serviceLocation . '/' . $id,
+                CURLOPT_CUSTOMREQUEST => 'DELETE'
+            )
+        );
+        $result = curl_exec($this->resource);
+        $responseHttpCode = curl_getinfo($this->resource, CURLINFO_HTTP_CODE);
 
-        $result = @file_get_contents('http://' . $this->serviceLocation . '/' . $id, false, $context);
-
-        if (!$result) {
+        if ($responseHttpCode !== 200) {
             throw new Exception('Can not delete content ' . $id);
         }
 
