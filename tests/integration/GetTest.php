@@ -15,7 +15,7 @@ class GetTest extends PHPUnit_Framework_TestCase
     public function testNotExistingContentCausesException()
     {
         $this->setExpectedException('Barberry\\Exception');
-        $this->client->get('not-existing');
+        $this->client->get(getenv('BARBERRY') . '/not-existing');
     }
 
     public function testExistingContent()
@@ -26,6 +26,17 @@ class GetTest extends PHPUnit_Framework_TestCase
             file_get_contents(__DIR__ . '/data/image.jpg'),
             $this->client->get($id)
         );
+    }
+
+    public function testUnavailableService()
+    {
+        $client = new Barberry\Client('127.0.0.1', 300, 50);
+        try {
+            $client->get('service-unavailable');
+        } catch (Barberry\Exception $e) {
+            $this->assertSame('Barberry service temporary unavailable', $e->getMessage());
+        }
+        $this->assertTrue($client->getRetries() === 0);
     }
 
     private static function uploadImage($filePath)
