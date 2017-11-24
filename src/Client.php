@@ -30,10 +30,10 @@ class Client
         curl_close($this->resource);
     }
 
-    public function get($idWithCommand)
+    public function get($idWithCommand, $retries = null)
     {
         curl_setopt($this->resource, CURLOPT_URL, 'http://' . $this->serviceLocation . '/' . $idWithCommand);
-        $content = $this->exec($this->resource);
+        $content = $this->exec($this->resource, $retries);
 
         $responseHttpCode = curl_getinfo($this->resource, CURLINFO_HTTP_CODE);
 
@@ -44,7 +44,7 @@ class Client
         return $content;
     }
 
-    public function post($content, $filename)
+    public function post($content, $filename, $retries = null)
     {
         $multipartBoundary = '--------------------------' . microtime(true);
         $postBody = <<<MULTIPART_FORM_DATA
@@ -69,7 +69,7 @@ MULTIPART_FORM_DATA;
             )
         );
 
-        $result = $this->exec($this->resource);
+        $result = $this->exec($this->resource, $retries);
         $responseHttpCode = curl_getinfo($this->resource, CURLINFO_HTTP_CODE);
 
         if ($responseHttpCode !== 201) {
@@ -79,7 +79,7 @@ MULTIPART_FORM_DATA;
         return json_decode($result, true);
     }
 
-    public function delete($id)
+    public function delete($id, $retries = null)
     {
         curl_setopt_array(
             $this->resource,
@@ -89,7 +89,7 @@ MULTIPART_FORM_DATA;
             )
         );
 
-        $result = $this->exec($this->resource);
+        $result = $this->exec($this->resource, $retries);
         $responseHttpCode = curl_getinfo($this->resource, CURLINFO_HTTP_CODE);
 
         if ($responseHttpCode !== 200) {
@@ -101,12 +101,15 @@ MULTIPART_FORM_DATA;
 
     /**
      * @param $resource
+     * @param $retries
      * @return mixed
      * @throws Exception
      */
-    private function exec($resource)
+    private function exec($resource, $retries = null)
     {
-        while ($this->retries) {
+        $numberOfAttempts = $retries === null ? $this->retries : $retries;
+
+        while ($numberOfAttempts) {
             $result = curl_exec($resource);
             if ($result !== false) {
                 return $result;
@@ -114,7 +117,7 @@ MULTIPART_FORM_DATA;
             if (!in_array(curl_errno($resource), $this->networkErrors)) {
                 throw new Exception(curl_error($resource));
             }
-            $this->retries--;
+            $numberOfAttempts--;
         }
         throw new Exception('Barberry service temporary unavailable', 503);
     }

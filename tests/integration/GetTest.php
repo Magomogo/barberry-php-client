@@ -32,11 +32,10 @@ class GetTest extends PHPUnit_Framework_TestCase
     {
         $client = new Barberry\Client('127.0.0.1', 300, 50);
         try {
-            $client->get('service-unavailable');
+            $client->get('service-unavailable', 2);
         } catch (Barberry\Exception $e) {
             $this->assertSame('Barberry service temporary unavailable', $e->getMessage());
         }
-        $this->assertAttributeSame(0, 'retries', $client);
     }
 
     private static function uploadImage($filePath)
