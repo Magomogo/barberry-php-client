@@ -36,7 +36,7 @@ class GetTest extends PHPUnit_Framework_TestCase
         } catch (Barberry\Exception $e) {
             $this->assertSame('Barberry service temporary unavailable', $e->getMessage());
         }
-        $this->assertTrue($client->getRetries() === 0);
+        $this->assertAttributeSame(0, 'retries', $client);
     }
 
     private static function uploadImage($filePath)

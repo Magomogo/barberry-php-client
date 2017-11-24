@@ -99,11 +99,6 @@ MULTIPART_FORM_DATA;
         return json_decode($result, true);
     }
 
-    public function getRetries()
-    {
-        return $this->retries;
-    }
-
     /**
      * @param $resource
      * @return mixed
