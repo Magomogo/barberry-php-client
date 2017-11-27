@@ -9,7 +9,6 @@ class Client
 
     private $serviceLocation;
     private $resource;
-    private $retries;
 
     private $networkErrors = [
         CURLE_COULDNT_CONNECT,
@@ -18,10 +17,9 @@ class Client
         CURLE_SEND_ERROR
     ];
 
-    public function __construct($serviceLocation, $timeoutMs = 300, $retries = null)
+    public function __construct($serviceLocation, $timeoutMs = 300)
     {
         $this->serviceLocation = $serviceLocation;
-        $this->retries = $retries;
         $this->resource = curl_init();
         curl_setopt($this->resource, CURLOPT_TIMEOUT_MS, $timeoutMs);
         curl_setopt($this->resource, CURLOPT_RETURNTRANSFER, 1);
@@ -108,7 +106,7 @@ MULTIPART_FORM_DATA;
      */
     private function exec($resource)
     {
-        $numberOfAttempts = $this->retries === null ? self::RETRIES : $this->retries;
+        $numberOfAttempts = self::RETRIES;
 
         while ($numberOfAttempts) {
             $result = curl_exec($resource);

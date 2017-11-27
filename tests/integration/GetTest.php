@@ -1,6 +1,12 @@
 <?php
+namespace Barberry;
 
-class GetTest extends PHPUnit_Framework_TestCase
+function sleep($seconds)
+{
+    return;
+}
+
+class GetTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var \Barberry\Client
@@ -9,7 +15,7 @@ class GetTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->client = new Barberry\Client(getenv('BARBERRY'));
+        $this->client = new Client(getenv('BARBERRY'));
     }
 
     public function testNotExistingContentCausesException()
@@ -30,14 +36,11 @@ class GetTest extends PHPUnit_Framework_TestCase
 
     public function testUnavailableService()
     {
-        $client = new Barberry\Client('127.0.0.1', 300, 2);
-        $timeStart = microtime(true);
+        $client = new Client('127.0.0.1', 300);
         try {
             $client->get('service-unavailable');
-        } catch (Barberry\Exception $e) {
+        } catch (Exception $e) {
             $this->assertSame('Barberry service temporary unavailable', $e->getMessage());
-            $timeFinish = microtime(true);
-            $this->assertSame(20, (int)($timeFinish - $timeStart));
         }
     }
 

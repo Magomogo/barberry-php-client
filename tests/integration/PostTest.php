@@ -1,6 +1,12 @@
 <?php
+namespace Barberry;
 
-class PostTest extends PHPUnit_Framework_TestCase
+function sleep($seconds)
+{
+    return;
+}
+
+class PostTest extends \PHPUnit_Framework_TestCase
 {
     private static $contentId;
 
@@ -11,7 +17,7 @@ class PostTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->client = new Barberry\Client(getenv('BARBERRY'));
+        $this->client = new Client(getenv('BARBERRY'));
     }
 
     public function testCanTransmitADocumentToBarberry()
