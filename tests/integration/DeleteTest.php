@@ -1,6 +1,12 @@
 <?php
+namespace Barberry;
 
-class DeleteTest extends PHPUnit_Framework_TestCase
+function sleep($seconds)
+{
+    return;
+}
+
+class DeleteTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var \Barberry\Client
@@ -9,7 +15,7 @@ class DeleteTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->client = new Barberry\Client(getenv('BARBERRY'));
+        $this->client = new Client(getenv('BARBERRY'));
     }
 
     public function testCanDeleteContent()

@@ -4,13 +4,24 @@ namespace Barberry;
 
 class Client
 {
+    const RETRIES = 12;
+    const DELAY_IN_SEC = 10;
+
     private $serviceLocation;
     private $resource;
 
-    public function __construct($serviceLocation)
+    private $networkErrors = [
+        CURLE_COULDNT_CONNECT,
+        CURLE_OPERATION_TIMEOUTED,
+        CURLE_RECV_ERROR,
+        CURLE_SEND_ERROR
+    ];
+
+    public function __construct($serviceLocation, $timeoutMs = 300)
     {
         $this->serviceLocation = $serviceLocation;
         $this->resource = curl_init();
+        curl_setopt($this->resource, CURLOPT_TIMEOUT_MS, $timeoutMs);
         curl_setopt($this->resource, CURLOPT_RETURNTRANSFER, 1);
     }
 
@@ -22,7 +33,7 @@ class Client
     public function get($idWithCommand)
     {
         curl_setopt($this->resource, CURLOPT_URL, 'http://' . $this->serviceLocation . '/' . $idWithCommand);
-        $content = curl_exec($this->resource);
+        $content = $this->exec($this->resource);
 
         $responseHttpCode = curl_getinfo($this->resource, CURLINFO_HTTP_CODE);
 
@@ -58,7 +69,7 @@ MULTIPART_FORM_DATA;
             )
         );
 
-        $result = curl_exec($this->resource);
+        $result = $this->exec($this->resource);
         $responseHttpCode = curl_getinfo($this->resource, CURLINFO_HTTP_CODE);
 
         if ($responseHttpCode !== 201) {
@@ -77,7 +88,8 @@ MULTIPART_FORM_DATA;
                 CURLOPT_CUSTOMREQUEST => 'DELETE'
             )
         );
-        $result = curl_exec($this->resource);
+
+        $result = $this->exec($this->resource);
         $responseHttpCode = curl_getinfo($this->resource, CURLINFO_HTTP_CODE);
 
         if ($responseHttpCode !== 200) {
@@ -85,5 +97,28 @@ MULTIPART_FORM_DATA;
         }
 
         return json_decode($result, true);
+    }
+
+    /**
+     * @param $resource
+     * @return mixed
+     * @throws Exception
+     */
+    private function exec($resource)
+    {
+        $numberOfAttempts = self::RETRIES;
+
+        while ($numberOfAttempts) {
+            $result = curl_exec($resource);
+            if ($result !== false) {
+                return $result;
+            }
+            if (!in_array(curl_errno($resource), $this->networkErrors)) {
+                throw new Exception(curl_error($resource));
+            }
+            $numberOfAttempts--;
+            sleep(self::DELAY_IN_SEC);
+        }
+        throw new Exception('Barberry service temporary unavailable', 503);
     }
 }

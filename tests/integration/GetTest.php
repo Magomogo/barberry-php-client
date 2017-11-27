@@ -1,6 +1,12 @@
 <?php
+namespace Barberry;
 
-class GetTest extends PHPUnit_Framework_TestCase
+function sleep($seconds)
+{
+    return;
+}
+
+class GetTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var \Barberry\Client
@@ -9,13 +15,13 @@ class GetTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->client = new Barberry\Client(getenv('BARBERRY'));
+        $this->client = new Client(getenv('BARBERRY'));
     }
 
     public function testNotExistingContentCausesException()
     {
         $this->setExpectedException('Barberry\\Exception');
-        $this->client->get('not-existing');
+        $this->client->get(getenv('BARBERRY') . '/not-existing');
     }
 
     public function testExistingContent()
@@ -26,6 +32,16 @@ class GetTest extends PHPUnit_Framework_TestCase
             file_get_contents(__DIR__ . '/data/image.jpg'),
             $this->client->get($id)
         );
+    }
+
+    public function testUnavailableService()
+    {
+        $client = new Client('127.0.0.1', 300);
+        try {
+            $client->get('service-unavailable');
+        } catch (Exception $e) {
+            $this->assertSame('Barberry service temporary unavailable', $e->getMessage());
+        }
     }
 
     private static function uploadImage($filePath)
