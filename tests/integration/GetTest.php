@@ -30,11 +30,14 @@ class GetTest extends PHPUnit_Framework_TestCase
 
     public function testUnavailableService()
     {
-        $client = new Barberry\Client('127.0.0.1', 300, 50);
+        $client = new Barberry\Client('127.0.0.1', 300, 2);
+        $timeStart = microtime(true);
         try {
-            $client->get('service-unavailable', 2);
+            $client->get('service-unavailable');
         } catch (Barberry\Exception $e) {
             $this->assertSame('Barberry service temporary unavailable', $e->getMessage());
+            $timeFinish = microtime(true);
+            $this->assertSame(20, (int)($timeFinish - $timeStart));
         }
     }
 
