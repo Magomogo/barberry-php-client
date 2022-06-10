@@ -1,24 +1,22 @@
 <?php
+
 namespace Barberry;
 
-function sleep($seconds)
-{
-    return;
-}
+use PHPUnit\Framework\TestCase;
 
-class DeleteTest extends \PHPUnit_Framework_TestCase
+class DeleteTest extends TestCase
 {
     /**
      * @var \Barberry\Client
      */
     private $client;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->client = new Client(getenv('BARBERRY'));
     }
 
-    public function testCanDeleteContent()
+    public function testCanDeleteContent(): void
     {
         $id = self::uploadImage(__DIR__ . '/data/image.jpg');
 
@@ -33,14 +31,13 @@ class DeleteTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(
             404,
-            $guzzle->get('http://' . getenv('BARBERRY') . '/' .  $id, array('exceptions' => false))->getStatusCode()
+            $guzzle->get('http://' . getenv('BARBERRY') . '/' .  $id, ['http_errors' => false])->getStatusCode()
         );
-
     }
 
-    public function testThrowsWhenContentCannotBeDeleted()
+    public function testThrowsWhenContentCannotBeDeleted(): void
     {
-        $this->setExpectedException('Barberry\\Exception');
+        $this->expectException(Exception::class);
 
         $this->client->delete('not-existing-id');
     }
@@ -48,15 +45,16 @@ class DeleteTest extends \PHPUnit_Framework_TestCase
     private static function uploadImage($filePath)
     {
         $guzzle = new \GuzzleHttp\Client();
-        $response = $guzzle->post('http://' . getenv('BARBERRY') . '/', array(
-            'body' => array(
-                'field_name'     => 'file',
-                'file_filed' => fopen($filePath, 'r')
-            )
-        ));
+        $response = $guzzle->post('http://' . getenv('BARBERRY') . '/', [
+            'multipart' => [
+                [
+                    'name'     => 'file',
+                    'contents' => file_get_contents($filePath),
+                    'filename' => basename($filePath)
+                ]
+            ]
+        ]);
 
-        $metaInfo = $response->json();
-
-        return $metaInfo['id'];
+        return json_decode($response->getBody())->id;
     }
 }

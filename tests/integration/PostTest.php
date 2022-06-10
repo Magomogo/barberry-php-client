@@ -1,12 +1,10 @@
 <?php
+
 namespace Barberry;
 
-function sleep($seconds)
-{
-    return;
-}
+use PHPUnit\Framework\TestCase;
 
-class PostTest extends \PHPUnit_Framework_TestCase
+class PostTest extends TestCase
 {
     private static $contentId;
 
@@ -15,7 +13,7 @@ class PostTest extends \PHPUnit_Framework_TestCase
      */
     private $client;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->client = new Client(getenv('BARBERRY'));
     }
@@ -24,24 +22,24 @@ class PostTest extends \PHPUnit_Framework_TestCase
     {
         $meta = $this->client->post(file_get_contents(__DIR__ . '/data/image.jpg'), 'test-image.jpg');
 
-        $this->assertRegExp('/.+/', $meta['id']);
-        $this->assertSame('test-image.jpg', $meta['filename']);
-        $this->assertSame(49161, $meta['length']);
-        $this->assertSame('jpg', $meta['ext']);
-        $this->assertSame('image/jpeg', $meta['contentType']);
+        self::assertMatchesRegularExpression('/.+/', $meta['id']);
+        self::assertSame('test-image.jpg', $meta['filename']);
+        self::assertSame(49161, $meta['length']);
+        self::assertSame('jpg', $meta['ext']);
+        self::assertSame('image/jpeg', $meta['contentType']);
 
         self::$contentId = $meta['id'];
     }
 
     public function testUploadedFileIsOk()
     {
-        $this->assertRegExp('/.+/', self::$contentId, 'Content was uploaded');
+        self::assertMatchesRegularExpression('/.+/', self::$contentId, 'Content was uploaded');
 
-        $gizzle = new \GuzzleHttp\Client();
+        $guzzle = new \GuzzleHttp\Client();
 
-        $this->assertSame(
+        self::assertSame(
             file_get_contents(__DIR__ . '/data/image.jpg'),
-            $gizzle->get('http://' . getenv('BARBERRY') . '/' . self::$contentId)->getBody() . ''
+            $guzzle->get('http://' . getenv('BARBERRY') . '/' . self::$contentId)->getBody() . ''
         );
     }
 }
