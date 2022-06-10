@@ -1,13 +1,14 @@
 <?php
 
-namespace Barberry;
+namespace Barberry\IntegrationTests;
 
-function sleep()
+use PHPUnit\Framework\TestCase;
+use Barberry;
+
+function sleep($seconds)
 {
     return;
 }
-
-use PHPUnit\Framework\TestCase;use function foo\func;
 
 class GetTest extends TestCase
 {
@@ -18,12 +19,12 @@ class GetTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->client = new Client(getenv('BARBERRY'));
+        $this->client = new Barberry\Client(getenv('BARBERRY'));
     }
 
     public function testNotExistingContentCausesException(): void
     {
-        $this->expectException(Exception::class);
+        $this->expectException(Barberry\Exception::class);
 
         $this->client->get(getenv('BARBERRY') . '/not-existing');
     }
@@ -40,10 +41,10 @@ class GetTest extends TestCase
 
     public function testUnavailableService(): void
     {
-        $client = new Client('192.0.0.1', 300);
+        $client = new Barberry\Client('192.0.0.1', 300);
         try {
             $client->get('service-unavailable');
-        } catch (Exception $e) {
+        } catch (Barberry\Exception $e) {
             $this->assertSame('Barberry service temporary unavailable', $e->getMessage());
         }
     }

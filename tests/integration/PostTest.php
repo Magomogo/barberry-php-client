@@ -1,8 +1,9 @@
 <?php
 
-namespace Barberry;
+namespace Barberry\IntegrationTests;
 
 use PHPUnit\Framework\TestCase;
+use Barberry;
 
 class PostTest extends TestCase
 {
@@ -15,7 +16,7 @@ class PostTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->client = new Client(getenv('BARBERRY'));
+        $this->client = new Barberry\Client(getenv('BARBERRY'));
     }
 
     public function testCanTransmitADocumentToBarberry()

@@ -1,19 +1,20 @@
 <?php
 
-namespace Barberry;
+namespace Barberry\IntegrationTests;
 
 use PHPUnit\Framework\TestCase;
+use Barberry;
 
 class DeleteTest extends TestCase
 {
     /**
-     * @var \Barberry\Client
+     * @var Barberry\Client
      */
     private $client;
 
     protected function setUp(): void
     {
-        $this->client = new Client(getenv('BARBERRY'));
+        $this->client = new Barberry\Client(getenv('BARBERRY'));
     }
 
     public function testCanDeleteContent(): void
@@ -37,7 +38,7 @@ class DeleteTest extends TestCase
 
     public function testThrowsWhenContentCannotBeDeleted(): void
     {
-        $this->expectException(Exception::class);
+        $this->expectException(Barberry\Exception::class);
 
         $this->client->delete('not-existing-id');
     }
