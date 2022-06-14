@@ -1,61 +1,60 @@
 <?php
-namespace Barberry;
 
-function sleep($seconds)
-{
-    return;
-}
+namespace Barberry\IntegrationTests;
 
-class GetTest extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+use GuzzleHttp;
+use Barberry;
+
+class GetTest extends TestCase
 {
     /**
-     * @var \Barberry\Client
+     * @var Barberry\Client
      */
     private $client;
 
-    public function setUp()
+    protected function setUp(): void
     {
-        $this->client = new Client(getenv('BARBERRY'));
+        $this->client = new Barberry\Client(getenv('BARBERRY'));
     }
 
-    public function testNotExistingContentCausesException()
+    public function testNotExistingContentCausesException(): void
     {
-        $this->setExpectedException('Barberry\\Exception');
-        $this->client->get(getenv('BARBERRY') . '/not-existing');
+        $this->expectException(Barberry\Exception::class);
+
+        $this->client->get('not-existing');
     }
 
-    public function testExistingContent()
+    public function testExistingContent(): void
     {
         $id = self::uploadImage(__DIR__ . '/data/image.jpg');
 
-        $this->assertEquals(
-            file_get_contents(__DIR__ . '/data/image.jpg'),
-            $this->client->get($id)
-        );
+        self::assertStringEqualsFile(__DIR__ . '/data/image.jpg', $this->client->get($id));
     }
 
-    public function testUnavailableService()
+    public function testUnavailableService(): void
     {
-        $client = new Client('127.0.0.1', 300);
-        try {
-            $client->get('service-unavailable');
-        } catch (Exception $e) {
-            $this->assertSame('Barberry service temporary unavailable', $e->getMessage());
-        }
+        $client = new Barberry\Client('192.0.0.1', 10, 1, 1);
+        $this->expectException(Barberry\Exception::class);
+
+        $client->get('service-unavailable');
     }
 
     private static function uploadImage($filePath)
     {
-        $guzzle = new \GuzzleHttp\Client();
-        $response = $guzzle->post('http://' . getenv('BARBERRY') . '/', array(
-            'body' => array(
-                'field_name'     => 'file',
-                'file_filed' => fopen($filePath, 'r')
-            )
-        ));
+        $guzzle = new GuzzleHttp\Client([
+            'base_uri' => getenv('BARBERRY')
+        ]);
+        $response = $guzzle->post('/', [
+            'multipart' => [
+                [
+                    'name'     => 'file',
+                    'contents' => file_get_contents($filePath),
+                    'filename' => basename($filePath)
+                ]
+            ]
+        ]);
 
-        $metaInfo = $response->json();
-
-        return $metaInfo['id'];
+        return json_decode($response->getBody(), false)->id;
     }
 }
