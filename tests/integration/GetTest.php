@@ -3,12 +3,8 @@
 namespace Barberry\IntegrationTests;
 
 use PHPUnit\Framework\TestCase;
+use GuzzleHttp;
 use Barberry;
-
-function sleep($seconds)
-{
-    return;
-}
 
 class GetTest extends TestCase
 {
@@ -26,7 +22,7 @@ class GetTest extends TestCase
     {
         $this->expectException(Barberry\Exception::class);
 
-        $this->client->get(getenv('BARBERRY') . '/not-existing');
+        $this->client->get('not-existing');
     }
 
     public function testExistingContent(): void
@@ -41,7 +37,7 @@ class GetTest extends TestCase
 
     public function testUnavailableService(): void
     {
-        $client = new Barberry\Client('192.0.0.1', 300);
+        $client = new Barberry\Client('192.0.0.1', 10);
         try {
             $client->get('service-unavailable');
         } catch (Barberry\Exception $e) {
@@ -51,8 +47,10 @@ class GetTest extends TestCase
 
     private static function uploadImage($filePath)
     {
-        $guzzle = new \GuzzleHttp\Client();
-        $response = $guzzle->post('http://' . getenv('BARBERRY') . '/', [
+        $guzzle = new GuzzleHttp\Client([
+            'base_uri' => getenv('BARBERRY')
+        ]);
+        $response = $guzzle->post('/', [
             'multipart' => [
                 [
                     'name'     => 'file',

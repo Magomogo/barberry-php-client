@@ -2,6 +2,7 @@
 
 namespace Barberry\IntegrationTests;
 
+use GuzzleHttp;
 use PHPUnit\Framework\TestCase;
 use Barberry;
 
@@ -21,18 +22,20 @@ class DeleteTest extends TestCase
     {
         $id = self::uploadImage(__DIR__ . '/data/image.jpg');
 
-        $guzzle = new \GuzzleHttp\Client();
+        $guzzle = new GuzzleHttp\Client([
+            'base_uri' => getenv('BARBERRY')
+        ]);
 
         $this->assertEquals(
             200,
-            $guzzle->get('http://' . getenv('BARBERRY') . '/' .  $id)->getStatusCode()
+            $guzzle->get('/' . $id)->getStatusCode()
         );
 
         $this->client->delete($id);
 
         $this->assertEquals(
             404,
-            $guzzle->get('http://' . getenv('BARBERRY') . '/' .  $id, ['http_errors' => false])->getStatusCode()
+            $guzzle->get('/' .  $id, ['http_errors' => false])->getStatusCode()
         );
     }
 
@@ -45,8 +48,10 @@ class DeleteTest extends TestCase
 
     private static function uploadImage($filePath)
     {
-        $guzzle = new \GuzzleHttp\Client();
-        $response = $guzzle->post('http://' . getenv('BARBERRY') . '/', [
+        $guzzle = new GuzzleHttp\Client([
+            'base_uri' => getenv('BARBERRY')
+        ]);
+        $response = $guzzle->post('/', [
             'multipart' => [
                 [
                     'name'     => 'file',

@@ -3,6 +3,7 @@
 namespace Barberry\IntegrationTests;
 
 use PHPUnit\Framework\TestCase;
+use GuzzleHttp;
 use Barberry;
 
 class PostTest extends TestCase
@@ -21,26 +22,31 @@ class PostTest extends TestCase
 
     public function testCanTransmitADocumentToBarberry()
     {
-        $meta = $this->client->post(file_get_contents(__DIR__ . '/data/image.jpg'), 'test-image.jpg');
+        $fileStream = GuzzleHttp\Psr7\Utils::streamFor(
+            GuzzleHttp\Psr7\Utils::tryFopen(__DIR__ . '/data/image.jpg', 'rb')
+        );
+        $meta = $this->client->post($fileStream, 'test-image.jpg');
 
-        self::assertMatchesRegularExpression('/.+/', $meta['id']);
-        self::assertSame('test-image.jpg', $meta['filename']);
-        self::assertSame(49161, $meta['length']);
-        self::assertSame('jpg', $meta['ext']);
-        self::assertSame('image/jpeg', $meta['contentType']);
+        self::assertMatchesRegularExpression('/.+/', $meta->id);
+        self::assertSame('test-image.jpg', $meta->filename);
+        self::assertSame(49161, $meta->length);
+        self::assertSame('jpg', $meta->ext);
+        self::assertSame('image/jpeg', $meta->contentType);
 
-        self::$contentId = $meta['id'];
+        self::$contentId = $meta->id;
     }
 
     public function testUploadedFileIsOk()
     {
         self::assertMatchesRegularExpression('/.+/', self::$contentId, 'Content was uploaded');
 
-        $guzzle = new \GuzzleHttp\Client();
+        $guzzle = new GuzzleHttp\Client([
+            'base_uri' => getenv('BARBERRY')
+        ]);
 
         self::assertSame(
             file_get_contents(__DIR__ . '/data/image.jpg'),
-            $guzzle->get('http://' . getenv('BARBERRY') . '/' . self::$contentId)->getBody() . ''
+            $guzzle->get(self::$contentId)->getBody() . ''
         );
     }
 }
