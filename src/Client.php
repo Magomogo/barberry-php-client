@@ -7,8 +7,8 @@ use Psr\Http\Message\StreamInterface;
 
 class Client
 {
-    public const RETRIES = 1;
-    public const DELAY_IN_SEC = 1;
+    public const RETRIES = 12;
+    public const DELAY_IN_SEC = 10;
 
     /**
      * @var GuzzleHttp\Client
