@@ -122,8 +122,6 @@ class Client
     {
         try {
             return $targetFunction();
-        } catch (Exception $e) {
-            throw $e;
         } catch (GuzzleHttp\Exception\ConnectException $e) {
             throw new Exception('Barberry service temporary unavailable');
         } catch (\Throwable $e) {
