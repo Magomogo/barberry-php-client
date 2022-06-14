@@ -7,9 +7,6 @@ use Psr\Http\Message\StreamInterface;
 
 class Client
 {
-    public const RETRIES = 12;
-    public const DELAY_IN_SEC = 10;
-
     /**
      * @var GuzzleHttp\Client
      */
@@ -23,11 +20,17 @@ class Client
     /**
      * @param string $serviceLocation
      * @param int $connectionTimeout
+     * @param int $numberOfRetries
+     * @param int $delayInSeconds
      */
-    public function __construct(string $serviceLocation, int $connectionTimeout = 30)
-    {
+    public function __construct(
+        string $serviceLocation,
+        int $connectionTimeout = 30,
+        int $numberOfRetries = 12,
+        int $delayInSeconds = 10
+    ) {
         $handlerStack = GuzzleHttp\HandlerStack::create();
-        $retryMiddleware = GuzzleMiddleware::retryRequest(self::RETRIES, self::DELAY_IN_SEC);
+        $retryMiddleware = GuzzleMiddleware::retryRequest($numberOfRetries, $delayInSeconds);
         $handlerStack->push($retryMiddleware);
 
         $this->httpClient = new GuzzleHttp\Client([

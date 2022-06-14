@@ -61,6 +61,6 @@ class DeleteTest extends TestCase
             ]
         ]);
 
-        return json_decode($response->getBody())->id;
+        return json_decode($response->getBody(), false)->id;
     }
 }

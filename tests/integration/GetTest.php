@@ -9,7 +9,7 @@ use Barberry;
 class GetTest extends TestCase
 {
     /**
-     * @var \Barberry\Client
+     * @var Barberry\Client
      */
     private $client;
 
@@ -29,20 +29,15 @@ class GetTest extends TestCase
     {
         $id = self::uploadImage(__DIR__ . '/data/image.jpg');
 
-        self::assertEquals(
-            file_get_contents(__DIR__ . '/data/image.jpg'),
-            $this->client->get($id)
-        );
+        self::assertStringEqualsFile(__DIR__ . '/data/image.jpg', $this->client->get($id));
     }
 
     public function testUnavailableService(): void
     {
-        $client = new Barberry\Client('192.0.0.1', 10);
-        try {
-            $client->get('service-unavailable');
-        } catch (Barberry\Exception $e) {
-            $this->assertSame('Barberry service temporary unavailable', $e->getMessage());
-        }
+        $client = new Barberry\Client('192.0.0.1', 10, 1, 1);
+        $this->expectException(Barberry\Exception::class);
+
+        $client->get('service-unavailable');
     }
 
     private static function uploadImage($filePath)
@@ -60,6 +55,6 @@ class GetTest extends TestCase
             ]
         ]);
 
-        return json_decode($response->getBody())->id;
+        return json_decode($response->getBody(), false)->id;
     }
 }

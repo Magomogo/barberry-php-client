@@ -20,7 +20,7 @@ class PostTest extends TestCase
         $this->client = new Barberry\Client(getenv('BARBERRY'));
     }
 
-    public function testCanTransmitADocumentToBarberry()
+    public function testCanTransmitADocumentToBarberry(): void
     {
         $fileStream = GuzzleHttp\Psr7\Utils::streamFor(
             GuzzleHttp\Psr7\Utils::tryFopen(__DIR__ . '/data/image.jpg', 'rb')
@@ -36,7 +36,7 @@ class PostTest extends TestCase
         self::$contentId = $meta->id;
     }
 
-    public function testUploadedFileIsOk()
+    public function testUploadedFileIsOk(): void
     {
         self::assertMatchesRegularExpression('/.+/', self::$contentId, 'Content was uploaded');
 
@@ -44,9 +44,6 @@ class PostTest extends TestCase
             'base_uri' => getenv('BARBERRY')
         ]);
 
-        self::assertSame(
-            file_get_contents(__DIR__ . '/data/image.jpg'),
-            $guzzle->get(self::$contentId)->getBody() . ''
-        );
+        self::assertStringEqualsFile(__DIR__ . '/data/image.jpg', (string) $guzzle->get(self::$contentId)->getBody());
     }
 }
