@@ -5,6 +5,7 @@ namespace Barberry\IntegrationTests;
 use PHPUnit\Framework\TestCase;
 use GuzzleHttp;
 use Barberry;
+use Psr\Http\Message\StreamInterface;
 
 class GetTest extends TestCase
 {
@@ -30,6 +31,13 @@ class GetTest extends TestCase
         $id = self::uploadImage(__DIR__ . '/data/image.jpg');
 
         self::assertStringEqualsFile(__DIR__ . '/data/image.jpg', $this->client->get($id));
+    }
+
+    public function testReturnStreamOfBinaryData(): void
+    {
+        $id = self::uploadImage(__DIR__ . '/data/image.jpg');
+
+        self::assertInstanceOf(StreamInterface::class, $this->client->get($id));
     }
 
     public function testUnavailableService(): void
