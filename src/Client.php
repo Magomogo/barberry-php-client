@@ -42,16 +42,16 @@ class Client
 
     /**
      * @param string $idWithCommand
-     * @return string Binary data
+     * @return StreamInterface Binary data stream
      * @throws Exception
      */
-    public function get(string $idWithCommand): string
+    public function get(string $idWithCommand): StreamInterface
     {
         return $this->handleExceptions(function () use ($idWithCommand) {
             $response = $this->httpClient->get($idWithCommand, ['timeout' => $this->connectionTimeout]);
 
             if ($response->getStatusCode() === 200) {
-                return (string) $response->getBody();
+                return $response->getBody();
             }
 
             throw new Exception(
