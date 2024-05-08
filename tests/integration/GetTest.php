@@ -16,7 +16,7 @@ class GetTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->client = new Barberry\Client(getenv('BARBERRY'));
+        $this->client = new Barberry\Client(getenv('BARBERRY') . '/');
     }
 
     public function testNotExistingContentCausesException(): void
@@ -42,7 +42,7 @@ class GetTest extends TestCase
 
     public function testUnavailableService(): void
     {
-        $client = new Barberry\Client('192.0.0.1', 10, 1, 1);
+        $client = new Barberry\Client('192.0.0.1/', 10, 1, 1);
         $this->expectException(Barberry\Exception::class);
 
         $client->get('service-unavailable');
