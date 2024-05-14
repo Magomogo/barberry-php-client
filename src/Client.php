@@ -71,7 +71,7 @@ class Client
         return $this->handleExceptions(function () use ($stream, $filename) {
             $request = new GuzzleHttp\Psr7\Request(
                 'POST',
-                '/',
+                '',
                 [],
                 new GuzzleHttp\Psr7\MultipartStream([
                     [

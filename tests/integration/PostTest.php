@@ -17,7 +17,7 @@ class PostTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->client = new Barberry\Client(getenv('BARBERRY'));
+        $this->client = new Barberry\Client(getenv('BARBERRY') . '/');
     }
 
     public function testCanTransmitADocumentToBarberry(): void

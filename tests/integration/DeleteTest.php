@@ -15,7 +15,7 @@ class DeleteTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->client = new Barberry\Client(getenv('BARBERRY'));
+        $this->client = new Barberry\Client(getenv('BARBERRY') . '/');
     }
 
     public function testCanDeleteContent(): void
