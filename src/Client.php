@@ -84,7 +84,7 @@ class Client
             $response = $this->httpClient->send($request, ['timeout' => $this->connectionTimeout]);
 
             if ($response->getStatusCode() === 201) {
-                return json_decode($response->getBody(), false);
+                return json_decode($response->getBody(), false, 512, JSON_THROW_ON_ERROR);
             }
 
             throw new Exception(
@@ -104,7 +104,7 @@ class Client
             $response = $this->httpClient->delete($id, ['timeout' => $this->connectionTimeout]);
 
             if ($response->getStatusCode() === 200) {
-                return json_decode($response->getBody(), false);
+                return json_decode($response->getBody(), false, 512, JSON_THROW_ON_ERROR);
             }
 
             throw new Exception(
